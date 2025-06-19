@@ -11,7 +11,7 @@ if(document.readyState !== "loading") {
 function initializedCode() {
     
     // Change "Hello world" to "Moi maailma" & print "hello world" to console
-    const changeButton = document.getElementById("change-button");
+    const changeButton = document.getElementById("my-button");
     const heading1 = document.getElementById("Heading1");
     
     changeButton.addEventListener("click", function() {
@@ -21,7 +21,7 @@ function initializedCode() {
 
     // Add items/text to the list
     const list = document.getElementById("my-list");
-    const addData = document.getElementById("my-button");
+    const addData = document.getElementById("add-data");
     const inputItem = document.getElementById("input-item");
 
     addData.addEventListener("click", function() { 
