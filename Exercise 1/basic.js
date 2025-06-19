@@ -21,7 +21,7 @@ function initializedCode() {
 
     // Add items/text to the list
     const list = document.getElementById("my-list");
-    const addData = document.getElementById("add-data");
+    const addData = document.getElementById("my-button");
     const inputItem = document.getElementById("input-item");
 
     addData.addEventListener("click", function() { 
