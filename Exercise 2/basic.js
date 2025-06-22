@@ -21,7 +21,7 @@ function initializedCode() {
         const table = document.getElementById("user-table");
         const tableBody = table.querySelector('tbody'); // Get the table body specifically
 
-        //
+
         let usernameExists = false;
         for (let i = 0; i < tableBody.rows.length; i++) {
             const tableRow = tableBody.rows[i];
@@ -42,6 +42,7 @@ function initializedCode() {
                 break;
             }
         }
+
         
         // If username does not exist, create a new row and  append it to the table body
         if (!usernameExists) {     
@@ -76,6 +77,7 @@ function initializedCode() {
         document.getElementById("input-admin").checked = false;
         document.getElementById("input-image").value = "";
     });
+    
 
     // Add event listener for empty table button
     emptyDataButton.addEventListener("click", function() {
