@@ -10,7 +10,7 @@ td {
 th {
     background-color: #b7d0ff;
     font-weight: bold;
-    padding: 12px 0px 12px 6x;
+    padding: 12px 0px 12px 6px;
     border-bottom: 2px solid gray;
 }
 
@@ -26,3 +26,8 @@ h1 {
     text-align: center;  
 }
 
+.center {
+    margin: auto;
+    padding: 60px;
+    width: 60%;
+}
