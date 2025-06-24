@@ -4,7 +4,7 @@ if (document.readyState !== "loading") {
     initializeCode();
 } else {
     document.addEventListener("DOMContentLoaded", function() {
-        console.log("Document was loaded after initial readyState check!");
+        console.log("Document is ready after waiting!");
         initializeCode();
     });
 }
