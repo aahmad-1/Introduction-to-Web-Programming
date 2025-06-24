@@ -1,4 +1,3 @@
-// Ensure the DOM is fully loaded before running the script
 if (document.readyState !== "loading") {
     console.log("Document is ready!");
     initializeCode();
@@ -15,27 +14,16 @@ if (document.readyState !== "loading") {
  * @param {object} body - The JSON object to send as the request body.
  * @returns {Promise<object>} - A promise that resolves to the parsed JSON response.
  */
-async function fetchStatFinData(url, body) {
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(body)
-        });
-
-        // Check if the request was successful
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error("Error fetching data:", error);
-        return null; // Return null or handle the error as appropriate
-    }
-}
+const fetchStatFinData = async (url, body) => {
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+    });
+    return await response.json();
+};
 
 /**
  * Sets up the table with population and employment data.
