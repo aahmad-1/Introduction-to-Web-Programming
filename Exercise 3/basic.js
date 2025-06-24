@@ -88,21 +88,21 @@ function setupTable(populationData, employmentData) {
 
         const row = tableBody.insertRow();
 
-        // Apply alternating row colors
+        // Apply row colors
         if (rowIndex % 2 === 0) {
             row.style.backgroundColor = "#f2f2f2"; // Even rows
         } else {
             row.style.backgroundColor = "#ffffff"; // Odd rows
         }
 
-        // Apply conditional styling based on employment percentage
+        // Apply colors based on employment percentage
         if (employmentPercentage > 45) {
             row.style.backgroundColor = "#abffbd";
         } else if (employmentPercentage < 25) {
             row.style.backgroundColor = "#ff9e9e";
         }
 
-        // Insert cells and populate data
+        // Insert cells & populate data
         const cell1 = row.insertCell(0);
         cell1.textContent = municipalityName;
 
@@ -123,12 +123,11 @@ function setupTable(populationData, employmentData) {
  * Initializes the code by fetching data and setting up the table.
  */
 async function initializeCode() {
-    // Define API URLs
+    // Define the API URLs
     const populationUrl = "https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/vaerak/statfin_vaerak_pxt_11ra.px";
     const employmentUrl = "https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/tyokay/statfin_tyokay_pxt_115b.px";
 
     // Fetch JSON bodies from local files
-    // The path should be relative to where your HTML file is served
     const populationBody = await (await fetch("population_query.json")).json();
     const employmentBody = await (await fetch("employment_query.json")).json();
 
@@ -143,7 +142,6 @@ async function initializeCode() {
         setupTable(populationData, employmentData);
     } else {
         console.error("Failed to fetch all required data.");
-        // Optionally, display a user-friendly message on the page
         const tableBody = document.getElementById("fetched-data");
         if (tableBody) {
             tableBody.innerHTML = '<tr><td colspan="4">Failed to load data. Please try again later.</td></tr>';
