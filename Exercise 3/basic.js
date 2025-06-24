@@ -69,6 +69,7 @@ const setupTable = (populationData, employmentData) => {
 
     // Create a map for employment data for easier lookup by municipality ID
     const employmentMap = {};
+    const employmentDimensionLabels = employmentData.dimension.Alue.category.label;
     const employmentDimensionKeys = employmentData.dimension.Alue.category.index;
 
     // Populate employmentMap with municipality IDs as keys and employment values as values
@@ -116,13 +117,25 @@ const setupTable = (populationData, employmentData) => {
         cell1.textContent = municipalityName;
 
         const cell2 = row.insertCell(1);
-        cell2.textContent = population !== null ? population : 'N/A';
+        if (population !== null) {
+        cell2.textContent = population;
+        } else {
+        cell2.textContent = 'N/A';
+        }
 
         const cell3 = row.insertCell(2);
-        cell3.textContent = employmentAmount !== null ? employmentAmount : 'N/A';
+        if (employmentAmount !== null) {
+        cell3.textContent = employmentAmount;
+        } else {
+        cell3.textContent = 'N/A';
+        }
 
         const cell4 = row.insertCell(3);
-        cell4.textContent = employmentPercentage !== null ? `${employmentPercentage}%` : 'N/A';
+        if (employmentPercentage !== null) {
+        cell4.textContent = `${employmentPercentage}%`;
+        } else {
+        cell4.textContent = 'N/A';
+        }
         
         rowIndex++;
     }
