@@ -57,15 +57,9 @@ body {
 @media (min-width: 800px) {
     .show-data {
         display: flex;
-        align-items: flex-start;
     }
     
     .show-info {
         padding: 10px;
-    }
-    
-    .show-data img {
-        flex-shrink: 0;
-        margin-right: 20px;
     }
 }
