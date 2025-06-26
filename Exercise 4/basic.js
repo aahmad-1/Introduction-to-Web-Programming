@@ -1,13 +1,3 @@
-if(document.readyState !== "loading") {
-    console.log("Document is ready!");
-    initializeCode();
-} else {
-    document.addEventListener("DOMContentLoaded", function() {
-        console.log("Document is ready after waiting!");
-        initializeCode();
-    });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     const inputShow = document.getElementById('input-show');
     const submitData = document.getElementById('submit-data');
