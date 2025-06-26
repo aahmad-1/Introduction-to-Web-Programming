@@ -1,3 +1,13 @@
+if(document.readyState !== "loading") {
+    console.log("Document is ready!");
+    initializeCode();
+} else {
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("Document is ready after waiting!");
+        initializeCode();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const inputShow = document.getElementById('input-show');
     const submitData = document.getElementById('submit-data');
@@ -55,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Create image element
             const img = document.createElement('img');
-            img.src = show.image ? show.image.medium : 'https://via.placeholder.com/210x295?text=No+Image';
+            img.src = show.image ? show.image.medium : 'no image availabe.jpg';
             img.alt = show.name;
 
             // Create show-info div
