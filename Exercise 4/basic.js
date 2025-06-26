@@ -1,50 +1,49 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const inputShow = document.getElementById('input-show');
-    const submitData = document.getElementById('submit-data');
-    const showContainer = document.querySelector('.show-container');
-
-    // Create show container if it doesn't exist
-    if (!showContainer) {
-        const container = document.createElement('div');
-        container.className = 'show-container';
-        document.body.appendChild(container);
-    }
-
-    // Add event listener to the form
-    const form = document.querySelector('form');
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        searchShows();
+if(document.readyState !== "loading") {
+    console.log("Document is ready!");
+    initializeCode();
+} else {
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("Document is currently loading!");
+        initializeCode();
     });
+}
 
-    // Add event listener to the button
-    submitData.addEventListener('click', function(e) {
-        e.preventDefault();
-        searchShows();
+function initializeCode() {
+    const inputShow = document.getElementById("input-show");
+    const submitData = document.getElementById("submit-data");
+    const showContainer = document.querySelector(".show-container");
+
+    // Handle button click
+    submitData.addEventListener("click", async function(event) {
+        event.preventDefault();
+        await searchShows();
     });
-
+    
     async function searchShows() {
         const query = inputShow.value.trim();
-        
-        if (!query) {
-            return;
-        }
-
-        try {
-            const response = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
-            const data = await response.json();
-            
-            displayShows(data);
-        } catch (error) {
-            console.error('Error fetching shows:', error);
+        if (query) {
+            const url = `https://api.tvmaze.com/search/shows?q=${(query)}`;
+            try {
+                const response = await fetch(url);
+                const fetched_data = await response.json();
+                displayShows(fetched_data);
+            } catch (error) {
+                console.error("ERROR: ", error);
+                showContainer.innerHTML = "<p>Error loading shows. Please try again.</p>";
+            }
         }
     }
-
+    
     function displayShows(shows) {
         const container = document.querySelector('.show-container');
         
         // Clear previous results
         container.innerHTML = '';
+
+        if (shows.length === 0) {
+            container.innerHTML = '<p>No shows found. Try a different search term.</p>';
+            return;
+        }
 
         shows.forEach(item => {
             const show = item.show;
@@ -55,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Create image element
             const img = document.createElement('img');
-            img.src = show.image ? show.image.medium : 'no image availabe.jpg';
+            img.src = show.image ? show.image.medium : 'https://dummyimage.com/210x295/000/fff.png&text=No+poster+available';
             img.alt = show.name;
 
             // Create show-info div
@@ -66,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const title = document.createElement('h1');
             title.textContent = show.name;
 
-            // Create summary (API already provides it wrapped in <p> tags)
+            // Create summary
             const summaryDiv = document.createElement('div');
             summaryDiv.innerHTML = show.summary || '<p>No summary available.</p>';
 
@@ -80,4 +79,4 @@ document.addEventListener('DOMContentLoaded', function() {
             container.appendChild(showDataDiv);
         });
     }
-});
+}
