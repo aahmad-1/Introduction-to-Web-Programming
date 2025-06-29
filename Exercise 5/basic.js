@@ -1,79 +1,127 @@
-if(document.readyState !== "loading") {
-    console.log("Document is ready");
-    initializeCode();
+// Global variable to store migration data
+let migrationData = {};
 
-} else {
-    document.addEventListener("DOMContentLoaded", function() {
-        console.log("Document is currently loading");
-        initializeCode();
-    });
-}
+const fetchData = async () => {
+    // 1. Fetch GeoJSON data for Finnish municipalities
+    const geoJsonUrl = "https://geo.stat.fi/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeName=tilastointialueet:kunta4500k&outputFormat=json&srsName=EPSG:4326";
+    const geoJsonRes = await fetch(geoJsonUrl);
+    const geoJsonData = await geoJsonRes.json();
 
-async function initializeCode() {
-    const map = L.map("map", {
-        minZoom: -3
-    });
+    // 4. Fetch migration data
+    const migrationApiUrl = "https://pxdata.stat.fi:443/PxWeb/api/v1/fi/StatFin/muutl/statfin_muutl_pxt_11a2.px";
+    const queryFile = await fetch("./migration_data_query.json");
+    const queryBody = await queryFile.json();
 
-    // Add OpenStreetMap background with attribution
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap"
-    }).addTo(map);
-
-    // Fetch municipality GeoJSON data
-    const geoDataUrl = "https://geo.stat.fi/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeName=tilastointialueet:kunta4500k&outputFormat=json&srsName=EPSG:4326";
-    const geoResponse = await fetch(geoDataUrl);
-    const geoJson = await geoResponse.json();
-
-    // Fetch migration data
-    const migrationResponse = await fetch("https://pxdata.stat.fi:443/PxWeb/api/v1/fi/StatFin/muutl/statfin_muutl_pxt_11a2.px", {
+    const migrationRes = await fetch(migrationApiUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: await (await fetch("migration_data_query.json")).text()
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(queryBody),
     });
-
-    const migrationData = await migrationResponse.json();
-    const areas = migrationData.dimension.Alue.category.label;
-    const values = migrationData.value;
+    const migrationJson = await migrationRes.json();
 
     // Process migration data
-    const migrationStats = {};
-    const areaCodes = Object.keys(areas);
-    for (let i = 0; i < areaCodes.length; i++) {
-        const code = areaCodes[i];
-        const name = areas[code];
-        const pos = values[i * 2];
-        const neg = values[i * 2 + 1];
-        migrationStats[name.toUpperCase()] = { pos, neg };
+    // The data array contains values for each municipality, alternating positive and negative migration
+    // The dimension 'Alue' contains the municipality codes, matching those in GeoJSON properties
+    const municipalityCodes = migrationJson.variables[0].values;
+    const migrationValues = migrationJson.data;
+
+    for (let i = 0; i < municipalityCodes.length; i++) {
+        const code = municipalityCodes[i];
+        // The values are positive and negative migration for each municipality, alternating.
+        const positiveMigration = migrationValues[i * 2];
+        const negativeMigration = migrationValues[i * 2 + 1];
+        
+        migrationData[code] = {
+            positive: positiveMigration,
+            negative: negativeMigration,
+            net: positiveMigration - negativeMigration // Calculate net migration
+        };
     }
 
-    // Create GeoJSON layer
-    const geoLayer = L.geoJSON(geoJson, {
-        style: feature => {
-            const name = feature.properties.name.toUpperCase();
-            const stats = migrationStats[name];
-            let color = "gray";
-            if (stats && stats.neg > 0) {
-                const hue = Math.min(Math.pow(stats.pos / stats.neg, 3) * 60, 120);
-                color = `hsl(${hue}, 75%, 50%)`;
-            }
-            return {
-                color: color,
-                weight: 2
-            };
-        },
-        onEachFeature: (feature, layer) => {
-            const name = feature.properties.name;
-            layer.bindTooltip(name);
-            layer.on("click", () => {
-                const stats = migrationStats[name.toUpperCase()];
-                if (stats) {
-                    layer.bindPopup(`${name}<br>Positive migration: ${stats.pos}<br>Negative migration: ${stats.neg}`).openPopup();
-                } else {
-                    layer.bindPopup(`${name}<br>No migration data available`).openPopup();
-                }
-            });
-        }
+    initMap(geoJsonData);
+};
+
+const initMap = (geoJsonData) => {
+    // 1. Creating the map
+    let map = L.map('map', {
+        minZoom: -3 // Set minZoom attribute
+    });
+
+    // 3. Add OpenStreetMap background
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap" // Add attribution
     }).addTo(map);
 
-    map.fitBounds(geoLayer.getBounds());
-}
+    // Display GeoJSON data
+    let geoJsonLayer = L.geoJSON(geoJsonData, {
+        style: getStyle, // 5. Conditional map styling
+        onEachFeature: onEachFeature, // 2. Basic functionality & 4. Advanced functionality
+        weight: 2 // Set weight attribute
+    }).addTo(map);
+
+    // Fit the map to the GeoJSON data
+    map.fitBounds(geoJsonLayer.getBounds());
+};
+
+// Function for basic and advanced functionality (tooltips and popups)
+const onEachFeature = (feature, layer) => {
+    // Get municipality name
+    const municipalityName = feature.properties.name; 
+    const municipalityCode = feature.properties.KuntaKoodi; // Assuming 'KuntaKoodi' is the property for municipality code
+
+    // 2. Show municipality name as a tooltip on hover
+    if (municipalityName) {
+        layer.bindTooltip(municipalityName);
+    }
+
+    // 4. Show migration data on click as a popup
+    if (municipalityName && migrationData[municipalityCode]) {
+        const data = migrationData[municipalityCode];
+        const popupContent = `
+            <b>${municipalityName}</b><br>
+            Positive Migration: ${data.positive}<br>
+            Negative Migration: ${data.negative}<br>
+            Net Migration: ${data.net}
+        `;
+        layer.bindPopup(popupContent);
+    }
+};
+
+// Function for conditional map styling
+const getStyle = (feature) => {
+    const municipalityCode = feature.properties.KuntaKoodi; // Assuming 'KuntaKoodi' is the property for municipality code
+    let hue = 0; // Default hue
+
+    if (migrationData[municipalityCode] && migrationData[municipalityCode].negative !== 0) {
+        const positive = migrationData[municipalityCode].positive;
+        const negative = migrationData[municipalityCode].negative;
+        
+        // 5. Calculate hue
+        let calculatedHue = (Math.pow((positive / negative), 3)) * 60;
+        hue = Math.min(calculatedHue, 120); // Cap hue at 120
+    } else if (migrationData[municipalityCode] && migrationData[municipalityCode].negative === 0 && migrationData[municipalityCode].positive > 0) {
+        // If negative is 0 and positive is > 0, it's very positive, set a high hue
+        hue = 120; // Green
+    } else if (migrationData[municipalityCode] && migrationData[municipalityCode].negative > 0 && migrationData[municipalityCode].positive === 0) {
+        // If positive is 0 and negative is > 0, it's very negative, set a low hue
+        hue = 0; // Red
+    } else {
+        // Default for no data or zero migration
+        hue = 60; // Yellow (neutral)
+    }
+
+    return {
+        fillColor: `hsl(${hue}, 75%, 50%)`, // HSL color value
+        weight: 2,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+    };
+};
+
+// Initiate the data fetching and map creation
+fetchData();

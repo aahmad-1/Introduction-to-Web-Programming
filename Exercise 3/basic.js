@@ -1,4 +1,4 @@
-if (document.readyState !== "loading") {
+if(document.readyState !== "loading") {
     console.log("Document is ready!");
     initializeCode();
 } else {
@@ -8,110 +8,100 @@ if (document.readyState !== "loading") {
     });
 }
 
-const populationUrl = "https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/vaerak/statfin_vaerak_pxt_11ra.px";
-const employmentUrl = "https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/tyokay/statfin_tyokay_pxt_115b.px";
-
-const fetchStatFinData = async(url, body) => {
-    const response = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
-    });
-    return await response.json();
-};
-
-async function initializeCode() {
-
-    const populationBody = await (await fetch("population_query.json")).json();
-    const employmentBody = await (await fetch("employment_query.json")).json();
-
-    const [populationData, employmentData] = await Promise.all([
-        fetchStatFinData(populationUrl, populationBody),
-        fetchStatFinData(employmentUrl, employmentBody)
-    ]);
-
-    setupTable(populationData, employmentData);
-};
-
-
-const setupTable = (populationData, employmentData) => {
-    const tableBody = document.getElementById("fetched-data");
-    if (!tableBody) {
-        console.error("Table body element not found.");
-        return;
-    }
-
-    // Extract municipality labels and their corresponding IDs from population data
-    const municipalities = populationData.dimension.Alue.category.label;
-    const populationValues = populationData.value;
-    const employmentValues = employmentData.value;
-
-    const populationIndices = populationData.dimension.Alue.category.index;
-    const employmentIndices = employmentData.dimension.Alue.category.index;
-
-    // Iterate through municipalities and fill in the table
-    let rowIndex = 0; 
-    for (const municipalityId in municipalities) {
-        const municipalityName = municipalities[municipalityId];
-
-        const populationIndex = populationIndices[municipalityId];
-        const employmentIndex = employmentIndices[municipalityId];
-
-        const population = populationValues[populationIndex];
-        let employmentAmount = 0;
-        if (employmentIndex !== undefined) {
-            employmentAmount = employmentValues[employmentIndex];
+function initializeCode() {
+    async function fetch_data() {
+        try {
+            const tbody = document.getElementById("data-added");
+            
+            // Clear any existing data
+            tbody.innerHTML = "";
+            
+            // Fetch population and employment query JSON files
+            const populationQueryResponse = await fetch("population_query.json");
+            if (!populationQueryResponse.ok) {
+                throw new Error(`Failed to fetch population query: ${populationQueryResponse.status}`);
+            }
+            const populationQuery = await populationQueryResponse.json();
+            
+            const employmentQueryResponse = await fetch("employment_query.json");
+            if (!employmentQueryResponse.ok) {
+                throw new Error(`Failed to fetch employment query: ${employmentQueryResponse.status}`);
+            }
+            const employmentQuery = await employmentQueryResponse.json();
+            
+            // Fetch population & employment data from the APIs
+            const populationResponse = await fetch("https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/vaerak/statfin_vaerak_pxt_11ra.px", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(populationQuery)
+            });
+            
+            if (!populationResponse.ok) {
+                throw new Error(`Population data fetch failed with status ${populationResponse.status}`);
+            }
+            const populationData = await populationResponse.json();
+            
+            const employmentResponse = await fetch("https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/tyokay/statfin_tyokay_pxt_115b.px", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(employmentQuery)
+            });
+            
+            if (!employmentResponse.ok) {
+                throw new Error(`Employment data fetch failed with status ${employmentResponse.status}`);
+            }
+            const employmentData = await employmentResponse.json();
+            
+            // Extract data
+            const municipalities = Object.values(populationData.dimension.Alue.category.label);
+            const populationValues = populationData.value;
+            const employmentValues = employmentData.value;
+            
+            // Display data in the table
+            municipalities.forEach((municipality, index) => {
+                const population = populationValues[index];
+                const employment = employmentValues[index];
+                
+                if (population > 0) {
+                    employmentPercentage = ((employment / population) * 100).toFixed(2) + "%";
+                } else {
+                    employmentPercentage = "N/A";
+                }
+                
+                const row = document.createElement("tr");
+                
+                row.innerHTML = `
+                    <td>${municipality}</td>
+                    <td>${population}</td>
+                    <td>${employment}</td>
+                    <td>${employmentPercentage}</td>
+                `;
+                
+                // Row colors based on the employment percentage
+                if (population > 0) {
+                    const percentageValue = parseFloat(employmentPercentage);
+                    if (percentageValue > 45) {
+                        row.style.backgroundColor = "#abffbd";
+                    } else if (percentageValue < 25) {
+                        row.style.backgroundColor = "#ff9e9e";
+                    }
+                }
+                
+                // Add row to table
+                tbody.appendChild(row);
+            });
+            
+        } catch (error) {
+            console.error("Error fetching or processing data:", error);
+            const errorRow = document.createElement("tr");
+            errorRow.innerHTML = `<td colspan="4" style="color: red; text-align: center;">Error loading data: ${error.message}</td>`;
+            document.getElementById("data-added").appendChild(errorRow);
         }
-
-        // Calculate employment percentage
-        let employmentPercentage = 0;
-        if (population && population !== 0) {
-            employmentPercentage = ((employmentAmount / population) * 100).toFixed(2);
-        }
-
-        const row = tableBody.insertRow();
-
-        // Apply row colors
-        if (rowIndex % 2 === 0) {
-            row.style.backgroundColor = "#f2f2f2"; 
-        } else {
-            row.style.backgroundColor = "#ffffff";
-        }
-
-        // Apply colors based on employment percentage
-        if (employmentPercentage > 45) {
-            row.style.backgroundColor = "#abffbd";
-        } else if (employmentPercentage < 25) {
-            row.style.backgroundColor = "#ff9e9e";
-        }
-
-        // Insert the cells and fill in data
-        const cell1 = row.insertCell(0);
-        cell1.textContent = municipalityName;
-
-        const cell2 = row.insertCell(1);
-        if (population !== null) {
-            cell2.textContent = population;
-        } else {
-            cell2.textContent = 'N/A';
-        }
-
-        const cell3 = row.insertCell(2);
-        if (employmentAmount !== null) {
-            cell3.textContent = employmentAmount;
-        } else {
-            cell3.textContent = 'N/A';
-        }
-
-        const cell4 = row.insertCell(3);
-        if (employmentPercentage !== null) {
-            cell4.textContent = `${employmentPercentage}%`;
-        } else {
-            cell4.textContent = 'N/A';
-        }
-
-        rowIndex++;
-    }
-};
+    } 
+    
+    fetch_data();
+}
