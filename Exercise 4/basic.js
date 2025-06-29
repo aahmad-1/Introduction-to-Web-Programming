@@ -52,7 +52,7 @@ function initializeCode() {
             const showDataDiv = document.createElement('div');
             showDataDiv.className = 'show-data';
 
-            // Create image element
+            // Create image 
             const img = document.createElement('img');
             img.src = show.image ? show.image.medium : 'https://dummyimage.com/210x295/000/fff.png&text=No+poster+available'; //placeholder image
             img.alt = show.name;
