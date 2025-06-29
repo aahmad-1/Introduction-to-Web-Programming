@@ -54,7 +54,7 @@ function initializeCode() {
 
             // Create image element
             const img = document.createElement('img');
-            img.src = show.image ? show.image.medium : 'https://dummyimage.com/210x295/000/fff.png&text=No+poster+available';
+            img.src = show.image ? show.image.medium : 'https://dummyimage.com/210x295/000/fff.png&text=No+poster+available'; //placeholder image
             img.alt = show.name;
 
             // Create show-info div
