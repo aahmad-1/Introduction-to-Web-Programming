@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise 6</title>
+    <script src="basic.js" defer></script>
+    <script src="https://unpkg.com/frappe-charts@latest"></script>
+</head> 
+<body>
+    <form>
+        <label for="input-area">Enter municipality:</label>
+        <input type="text" id="input-area" placeholder="Ex: whole country">
+        <button type="submit" id="submit-data">Submit</button>
+    </form>
+    
+    <div id="chart"></div>
+    
+    <button id="add-data">View estimative data</button>
+    <button onclick="window.location.href='newchart.html'" id="navigation">View birth and death charts</button>
+</body>
+</html>
