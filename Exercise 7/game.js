@@ -121,24 +121,6 @@ class playGame extends Phaser.Scene {
         this.rightmostGroundX = 0;
     }
 
-    createInitialGround() {
-        // Create enough ground tiles to cover the screen width plus extra
-        const groundCount = Math.ceil(this.scale.width / this.groundWidth) + 5;
-        
-        for (let i = 0; i < groundCount; i++) {
-            let ground = this.groundGroup.create(
-                i * this.groundWidth + this.groundWidth / 2,
-                this.groundY,
-                'ground'
-            ).setOrigin(0.5, 0);
-            
-            ground.refreshBody();
-            
-            // Track the rightmost position
-            this.rightmostGroundX = Math.max(this.rightmostGroundX, ground.x + this.groundWidth / 2);
-        }
-    }
-
     addGroundTile() {
         // Add a new ground tile at the rightmost position
         let ground = this.groundGroup.create(
@@ -166,25 +148,6 @@ class playGame extends Phaser.Scene {
             }
         });
 
-        // Scroll ground to the left and properly update physics bodies
-        const groundsToRemove = [];
-        this.groundGroup.children.entries.forEach(ground => {
-            ground.x -= scrollSpeed;
-            
-            // IMPORTANT: Refresh the physics body after moving
-            ground.body.updateFromGameObject();
-            
-            // Mark ground tiles for removal that are far off screen
-            if (ground.x < -this.groundWidth * 2) {
-                groundsToRemove.push(ground);
-            }
-        });
-
-        // Remove marked ground tiles
-        groundsToRemove.forEach(ground => {
-            this.groundGroup.remove(ground);
-            ground.destroy();
-        });
 
         // Add new ground tiles as needed
         if (this.rightmostGroundX - scrollSpeed <= this.scale.width + this.groundWidth) {
@@ -194,7 +157,6 @@ class playGame extends Phaser.Scene {
         // Update rightmost ground position
         this.rightmostGroundX -= scrollSpeed;
 
-        // Character controls
         if(this.cursors.left.isDown) {
             this.mage.body.velocity.x = -gameOptions.mageSpeed
             this.mage.anims.play("left", true)
@@ -213,7 +175,7 @@ class playGame extends Phaser.Scene {
             this.mage.anims.play("jump", true)
         }
 
-        // Only restart if mage goes off screen (left, right, or falls down)
+        // restart if character goes off screen
         if (this.mage.x < -50 || this.mage.x > game.config.width + 50 ||
             this.mage.y > game.config.height + 100) {
             this.scene.restart();
