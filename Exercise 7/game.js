@@ -2,7 +2,9 @@ let game
 
 const gameOptions = {
     mageGravity: 900,
-    mageSpeed: 250 
+    mageSpeed: 250,
+    gameSpeed: 300,        // Speed of background scrolling
+    groundHeight: 100      // Height of ground from bottom
 }
 
 window.onload = function () {
@@ -47,38 +49,38 @@ class playGame extends Phaser.Scene {
     }
 
     create() {
-        // Add the background image centered and scaled
-        this.background = this.add.image(this.scale.width / 2, this.scale.height / 2, "background")
-            .setOrigin(0.5, 0.5);
-
-        const bgWidth = this.background.width;
-        const bgHeight = this.background.height;
-        const scaleX = this.scale.width / bgWidth;
+        // Create scrolling background with multiple instances
+        this.backgroundGroup = this.add.group();
+        
+        // Get background dimensions for proper tiling
+        const bgImg = this.textures.get('background').getSourceImage();
+        const bgWidth = bgImg.width;
+        const bgHeight = bgImg.height;
+        
+        // Scale background to fit screen height
         const scaleY = this.scale.height / bgHeight;
-        const scale = Math.max(scaleX, scaleY);
-        this.background.setScale(scale);
-
-
-        // --- Ground alignment ---
-        this.groundGroup = this.physics.add.staticGroup();
-
-        // Get ground image dimensions
-        const groundImg = this.textures.get('ground').getSourceImage();
-        const groundWidth = groundImg.width;
-
-        // Adjust this value until the ground aligns with the green area in your background
-        // Try values like 120, 130, 140, etc. until it looks right
-        const groundY = this.scale.height - 100;
-
-        // Tile ground across the width
-        const groundCount = Math.ceil(this.scale.width / groundWidth);
-        for (let i = 0; i < groundCount; i++) {
-            this.groundGroup.create(
-                i * groundWidth + groundWidth / 2,
-                groundY,
-                'ground'
-            ).setOrigin(0.5, 0).refreshBody();
+        const scaledBgWidth = bgWidth * scaleY;
+        
+        // Create multiple background instances to ensure seamless scrolling
+        const bgCount = Math.ceil(this.scale.width / scaledBgWidth) + 2;
+        
+        for (let i = 0; i < bgCount; i++) {
+            let bg = this.add.image(i * scaledBgWidth, this.scale.height / 2, "background")
+                .setOrigin(0, 0.5)
+                .setScale(scaleY);
+            this.backgroundGroup.add(bg);
         }
+
+        // Create ground group for physics
+        this.groundGroup = this.physics.add.staticGroup();
+        
+        // Get ground dimensions
+        const groundImg = this.textures.get('ground').getSourceImage();
+        this.groundWidth = groundImg.width;
+        this.groundY = this.scale.height - gameOptions.groundHeight;
+        
+        // Create initial ground tiles
+        this.createInitialGround();
 
         // --- Mage setup ---
         this.mage = this.physics.add.sprite(game.config.width / 10, game.config.height / 1.5, "mage")
@@ -88,6 +90,7 @@ class playGame extends Phaser.Scene {
 
         this.cursors = this.input.keyboard.createCursorKeys()
 
+        // Animation setup
         this.anims.create({
             key: "left",
             frames: this.anims.generateFrameNumbers("mage", {start: 24, end: 31}),
@@ -114,12 +117,84 @@ class playGame extends Phaser.Scene {
             repeat: -1
         })
 
+        // Track rightmost ground position for infinite scrolling
+        this.rightmostGroundX = 0;
+    }
+
+    createInitialGround() {
+        // Create enough ground tiles to cover the screen width plus extra
+        const groundCount = Math.ceil(this.scale.width / this.groundWidth) + 5;
+        
+        for (let i = 0; i < groundCount; i++) {
+            let ground = this.groundGroup.create(
+                i * this.groundWidth + this.groundWidth / 2,
+                this.groundY,
+                'ground'
+            ).setOrigin(0.5, 0);
+            
+            ground.refreshBody();
+            
+            // Track the rightmost position
+            this.rightmostGroundX = Math.max(this.rightmostGroundX, ground.x + this.groundWidth / 2);
+        }
+    }
+
+    addGroundTile() {
+        // Add a new ground tile at the rightmost position
+        let ground = this.groundGroup.create(
+            this.rightmostGroundX + this.groundWidth / 2,
+            this.groundY,
+            'ground'
+        ).setOrigin(0.5, 0);
+        
+        ground.refreshBody();
+        this.rightmostGroundX += this.groundWidth;
     }
 
     spawnPotion() {}
 
     update() {
+        const scrollSpeed = gameOptions.gameSpeed * this.game.loop.delta / 1000;
+        
+        // Scroll background to the left
+        this.backgroundGroup.children.entries.forEach(bg => {
+            bg.x -= scrollSpeed;
+            
+            // Reset background position when it goes off screen
+            if (bg.x <= -bg.displayWidth) {
+                bg.x = this.getMaxBackgroundX() + bg.displayWidth;
+            }
+        });
 
+        // Scroll ground to the left and properly update physics bodies
+        const groundsToRemove = [];
+        this.groundGroup.children.entries.forEach(ground => {
+            ground.x -= scrollSpeed;
+            
+            // IMPORTANT: Refresh the physics body after moving
+            ground.body.updateFromGameObject();
+            
+            // Mark ground tiles for removal that are far off screen
+            if (ground.x < -this.groundWidth * 2) {
+                groundsToRemove.push(ground);
+            }
+        });
+
+        // Remove marked ground tiles
+        groundsToRemove.forEach(ground => {
+            this.groundGroup.remove(ground);
+            ground.destroy();
+        });
+
+        // Add new ground tiles as needed
+        if (this.rightmostGroundX - scrollSpeed <= this.scale.width + this.groundWidth) {
+            this.addGroundTile();
+        }
+
+        // Update rightmost ground position
+        this.rightmostGroundX -= scrollSpeed;
+
+        // Character controls
         if(this.cursors.left.isDown) {
             this.mage.body.velocity.x = -gameOptions.mageSpeed
             this.mage.anims.play("left", true)
@@ -138,10 +213,18 @@ class playGame extends Phaser.Scene {
             this.mage.anims.play("jump", true)
         }
 
-        // Only restart if mage goes off screen
-        if (this.mage.x < 0 || this.mage.x > game.config.width ||
-            this.mage.y < 0 || this.mage.y > game.config.height) {
+        // Only restart if mage goes off screen (left, right, or falls down)
+        if (this.mage.x < -50 || this.mage.x > game.config.width + 50 ||
+            this.mage.y > game.config.height + 100) {
             this.scene.restart();
         }
+    }
+
+    getMaxBackgroundX() {
+        let maxX = 0;
+        this.backgroundGroup.children.entries.forEach(bg => {
+            maxX = Math.max(maxX, bg.x);
+        });
+        return maxX;
     }
 }
