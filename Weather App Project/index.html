@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Weather App</title>
-        <script src="app.js" defer></script>
+        <script src="weeklyWeather.js" defer></script>
         <link rel="stylesheet" href="styles.css">
     </head>
     <body>
@@ -13,18 +13,22 @@
         <div class="container">
             <div class="weather-input">
                 <h3>Enter City</h3>
-                <input type="text" placeholder="E.g. New York, London">
+                <input class="city-input" type="text" placeholder="E.g. New York, London, Tokyo">
                 <button class="search-btn">Search</button>
                 <div class="separator"></div>
                 <button class="location-btn">Use Current Location</button>
+                <div class="unit-buttons">
+                    <button class="celsius-btn active">°C</button>
+                    <button class="kelvin-btn">°K</button>
+                </div>
             </div>
             <div class="weather-data">
                 <div class="current-weather">
                     <div class="details">
-                        <h2>London (2023-06-19)</h2>
-                        <h4>Temperature: 19.1°C</h4>
-                        <h4>Wind: 4.31 M/S</h4>
-                        <h4>Humidity: 67%</h4>
+                        <h2>_____ ( ______ )</h2>
+                        <h4>Temperature: __°C</h4>
+                        <h4>Wind: __ M/S</h4>
+                        <h4>Humidity: __%</h4>
                     </div>  
                     <div class="icon">
                         <img src="https://openweathermap.org/img/wn/04d@4x.png" alt="weather-icon">
@@ -35,53 +39,46 @@
                     <h2>7-Day Forecast</h2>
                     <ul class="weather-cards">
                         <li class="card">
-                            <h3>London (2023-06-19)</h3>
-                            <img src="https://openweathermap.org/img/wn/04d@2x.png" alt="weather-icon">
-                            <h4>Temperature: 19.1°C</h4>
-                            <h4>Wind: 4.31 M/S</h4>
-                            <h4>Humidity: 67%</h4>
+                            <h3>( ______ )</h3>
+                            <h4>Temperature: __°C</h4>
+                            <h4>Wind: __ M/S</h4>
+                            <h4>Humidity: __%</h4>
                         </li>
                         <li class="card">
-                            <h3>London (2023-06-19)</h3>
-                            <img src="https://openweathermap.org/img/wn/04d@2x.png" alt="weather-icon">
-                            <h4>Temperature: 19.1°C</h4>
-                            <h4>Wind: 4.31 M/S</h4>
-                            <h4>Humidity: 67%</h4>
+                            <h3>( ______ )</h3>
+                            <h4>Temperature: __°C</h4>
+                            <h4>Wind: __ M/S</h4>
+                            <h4>Humidity: __%</h4>
                         </li>
                         <li class="card">
-                            <h3>London (2023-06-19)</h3>
-                            <img src="https://openweathermap.org/img/wn/04d@2x.png" alt="weather-icon">
-                            <h4>Temperature: 19.1°C</h4>
-                            <h4>Wind: 4.31 M/S</h4>
-                            <h4>Humidity: 67%</h4>
+                            <h3>( ______ )</h3>
+                            <h4>Temperature: __°C</h4>
+                            <h4>Wind: __ M/S</h4>
+                            <h4>Humidity: __%</h4>
                         </li>
                         <li class="card">
-                            <h3>London (2023-06-19)</h3>
-                            <img src="https://openweathermap.org/img/wn/04d@2x.png" alt="weather-icon">
-                            <h4>Temperature: 19.1°C</h4>
-                            <h4>Wind: 4.31 M/S</h4>
-                            <h4>Humidity: 67%</h4>
+                            <h3>( ______ )</h3>
+                            <h4>Temperature: __°C</h4>
+                            <h4>Wind: __ M/S</h4>
+                            <h4>Humidity: __%</h4>
                         </li>
                         <li class="card">
-                            <h3>London (2023-06-19)</h3>
-                            <img src="https://openweathermap.org/img/wn/04d@2x.png" alt="weather-icon">
-                            <h4>Temperature: 19.1°C</h4>
-                            <h4>Wind: 4.31 M/S</h4>
-                            <h4>Humidity: 67%</h4>
+                            <h3>( ______ )</h3>
+                            <h4>Temperature: __°C</h4>
+                            <h4>Wind: __ M/S</h4>
+                            <h4>Humidity: __%</h4>
+                        </li>
+                       <li class="card">
+                            <h3>( ______ )</h3>
+                            <h4>Temperature: __°C</h4>
+                            <h4>Wind: __ M/S</h4>
+                            <h4>Humidity: __%</h4>
                         </li>
                         <li class="card">
-                            <h3>London (2023-06-19)</h3>
-                            <img src="https://openweathermap.org/img/wn/04d@2x.png" alt="weather-icon">
-                            <h4>Temperature: 19.1°C</h4>
-                            <h4>Wind: 4.31 M/S</h4>
-                            <h4>Humidity: 67%</h4>
-                        </li>
-                        <li class="card">
-                            <h3>London (2023-06-19)</h3>
-                            <img src="https://openweathermap.org/img/wn/04d@2x.png" alt="weather-icon">
-                            <h4>Temperature: 19.1°C</h4>
-                            <h4>Wind: 4.31 M/S</h4>
-                            <h4>Humidity: 67%</h4>
+                            <h3>( ______ )</h3>
+                            <h4>Temperature: __°C</h4>
+                            <h4>Wind: __ M/S</h4>
+                            <h4>Humidity: __%</h4>
                         </li>
                     </ul>
                 </div>

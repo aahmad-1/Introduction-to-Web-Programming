@@ -172,3 +172,22 @@ h1 {
         width: 100%;
     }
 }
+.unit-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.unit-buttons button {
+    flex: 1;
+    padding: 8px 0;
+    background: #41518f;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.unit-buttons button.active {
+    background: #2c3e6b;
+    font-weight: bold;
+}
