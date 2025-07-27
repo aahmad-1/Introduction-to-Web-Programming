@@ -21,6 +21,7 @@ h1 {
     padding: 30px;
     width: 100%;
     min-height: calc(100vh - 70px);
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }
 .weather-input {
     width: 350px;
@@ -76,6 +77,8 @@ h1 {
 .weather-data {
     width: 100%;
     flex: 1;
+    min-width: 0; /* Allow flex item to shrink below its content size */
+    overflow: hidden; /* Contain any overflow */
 }
 .current-weather {
     color: #fff;
@@ -129,6 +132,117 @@ h1 {
     max-width: 70px;
     margin: 5px 0 -12px 0;
 }
+.unit-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+.unit-buttons button {
+    flex: 1;
+    padding: 8px 0;
+    background: #41518f;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.unit-buttons button.active {
+    background: #2c3e6b;
+    font-weight: bold;
+}
+
+.forecast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.forecast-header h2{
+    font-size: 1.5rem;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 10px;
+}
+
+.view-toggle button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #41518f;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.view-toggle button.active {
+    background: #2c3e6b;
+    font-weight: bold;
+}
+
+/* Hourly forecast styles */
+.hourly-forecast {
+    display: none;
+    width: 100%; /* Ensure it takes full width of parent */
+    overflow: hidden; /* Prevent overflow from affecting parent */
+}
+
+.hourly-weather-cards {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 10px 0;
+    scrollbar-width: thin;
+    scrollbar-color: #41518f #E3F2FD;
+    width: 100%; /* Ensure it respects parent width */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.hourly-weather-cards::-webkit-scrollbar {
+    height: 8px;
+}
+
+.hourly-weather-cards::-webkit-scrollbar-track {
+    background: #E3F2FD;
+    border-radius: 4px;
+}
+
+.hourly-weather-cards::-webkit-scrollbar-thumb {
+    background: #41518f;
+    border-radius: 4px;
+}
+
+.hourly-weather-cards::-webkit-scrollbar-thumb:hover {
+    background: #2c3e6b;
+}
+
+.hourly-weather-cards .hourly-card {
+    list-style: none;
+    color: #fff;
+    padding: 16px 12px;
+    border-radius: 5px;
+    background: #6C757D;
+    min-width: 150px;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+.hourly-weather-cards .hourly-card h4 {
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.hourly-weather-cards .hourly-card p {
+    font-size: 0.85rem;
+    margin: 3px 0;
+    opacity: 0.9;
+}
+
+.hourly-weather-cards .hourly-card img {
+    max-width: 50px;
+    margin: 5px 0;
+}
 
 @media (max-width: 1600px) {
     .weather-cards {
@@ -162,6 +276,10 @@ h1 {
     .weather-cards .card {
         width: calc(100% / 2 - 10px);
     }
+    
+    .hourly-weather-cards .hourly-card {
+        min-width: 130px;
+    }
 }
 @media (max-width: 750px) {
     .container{
@@ -171,23 +289,9 @@ h1 {
     .weather-input {
         width: 100%;
     }
-}
-.unit-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.unit-buttons button {
-    flex: 1;
-    padding: 8px 0;
-    background: #41518f;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.unit-buttons button.active {
-    background: #2c3e6b;
-    font-weight: bold;
+    
+    .hourly-weather-cards .hourly-card {
+        min-width: 120px;
+        padding: 12px 8px;
+    }
 }
