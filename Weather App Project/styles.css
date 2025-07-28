@@ -106,6 +106,9 @@ h1 {
 .current-weather .details h2 {
     font-size: 1.7rem;
     margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 .current-weather .details h4 {
     margin-top: 12px;
@@ -122,6 +125,18 @@ h1 {
 .current-weather .icon h4 {
     margin-top: -10px;
     text-transform: capitalize;
+}
+
+.favorite-icon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: transform 0.2s ease;
+}
+
+.favorite-icon:hover {
+    transform: scale(1.1);
 }
 
 .days-forecast h2{
@@ -195,7 +210,60 @@ h1 {
     font-weight: bold;
 }
 
-/* Hourly forecast styles */
+/* Favorites list styles */
+.favorites-list {
+    display: none;
+    width: 100%;
+    overflow: hidden;
+}
+
+.favorite-locations {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.favorite-locations .favorite-item {
+    background: #6C757D;
+    color: #fff;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.favorite-locations .favorite-item .location-name {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.favorite-locations .favorite-item .check-weather-btn {
+    background: #41518f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.favorite-locations .favorite-item .check-weather-btn:hover {
+    background: #2c3e6b;
+}
+
+.favorites-empty {
+    text-align: center;
+    color: #6C757D;
+    font-size: 1.1rem;
+    padding: 40px 20px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border: 2px dashed #ccc;
+}
+
 .hourly-forecast {
     display: none;
     width: 100%; /* Ensure it takes full width of parent */
@@ -209,8 +277,8 @@ h1 {
     padding: 10px 0;
     scrollbar-width: thin;
     scrollbar-color: #41518f #E3F2FD;
-    width: 100%; /* Ensure it respects parent width */
-    box-sizing: border-box; /* Include padding in width calculation */
+    width: 100%; 
+    box-sizing: border-box; 
 }
 
 .hourly-weather-cards::-webkit-scrollbar {
@@ -294,6 +362,16 @@ h1 {
     .hourly-weather-cards .hourly-card {
         min-width: 130px;
     }
+    
+    .favorite-locations .favorite-item {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .favorite-locations .favorite-item .check-weather-btn {
+        width: 100%;
+    }
 }
 @media (max-width: 750px) {
     .container{
@@ -308,5 +386,16 @@ h1 {
         min-width: 120px;
         padding: 12px 8px;
     }
+    
+    .current-weather .details h2 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .favorite-icon {
+        width: 20px;
+        height: 20px;
+        margin-left: 0;
+    }
 }
-

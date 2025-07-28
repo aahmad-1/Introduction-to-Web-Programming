@@ -11,6 +11,7 @@ const fahrenheitButton = document.querySelector('.fahrenheit-btn');
 const kelvinButton = document.querySelector('.kelvin-btn');
 
 const forecastTitle = document.querySelector('.forecast-title');
+const favoritesButton = document.querySelector('.favorites-btn');
 const dailyButton = document.querySelector('.daily-btn');
 const hourlyButton = document.querySelector('.hourly-btn');
 
@@ -19,12 +20,15 @@ const dailyWeatherCardsDiv = document.querySelector('.weather-cards');
 const hourlyWeatherCardsDiv = document.querySelector('.hourly-weather-cards');
 const dailyForecastDiv = document.querySelector('.daily-forecast');
 const hourlyForecastDiv = document.querySelector('.hourly-forecast');
+const favoritesListDiv = document.querySelector('.favorites-list');
+const favoriteLocationsList = document.querySelector('.favorite-locations');
 
 let currentTempUnit = 'celsius';
 let currentCityName = ''; 
 let currentLat = null;
 let currentLon = null;
 let currentWeatherView = 'hourly';
+let favoriteLocations = [];
 
 const API_KEY = '7572b5fbf535d95745474fe2a0f77816';
 
@@ -88,6 +92,79 @@ const changeBackground = (weatherData) => {
 
 }
 
+const isLocationFavorited = (locationName) => {
+    for (let i = 0; i < favoriteLocations.length; i++) {
+        if (favoriteLocations[i] === locationName) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const toggleFavoriteLocation = (locationName) => {
+    if (isLocationFavorited(locationName)) {
+        favoriteLocations = favoriteLocations.filter(name => name !== locationName);
+    } else {
+        favoriteLocations.push(locationName);
+    }
+    updateFavoriteIcon(locationName);
+    updateFavoritesList();
+}
+
+const updateFavoriteIcon = (locationName) => {
+    const favoriteIcon = document.querySelector('.favorite-icon');
+    if (favoriteIcon) {
+        if (isLocationFavorited(locationName)) {
+            favoriteIcon.src = 'assets/favorite.png';
+        } else {
+            favoriteIcon.src = 'assets/unfavorite.png';
+        }
+    }
+}
+
+const updateFavoritesList = () => {
+    favoriteLocationsList.innerHTML = '';
+    
+    if (favoriteLocations.length === 0) {
+        alert('No locations have been favorited.');
+        return;
+    }
+    
+    favoriteLocations.forEach(locationName => {
+        const listItem = document.createElement('li');
+        listItem.className = 'favorite-item';
+        listItem.innerHTML = `
+            <span class="location-name">${locationName}</span>
+            <button class="check-weather-btn" onclick="checkWeatherFromFavoritesList('${locationName}')">Check Weather</button>
+        `;
+        favoriteLocationsList.appendChild(listItem);
+    });
+}
+
+const checkWeatherFromFavoritesList = (locationName) => {
+    const GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/direct?q=${locationName}&limit=1&appid=${API_KEY}`;
+
+    fetch(GEOCODING_API_URL)
+        .then(response => response.json())
+        .then(data => {
+            if(!data.length) {
+                alert(`No coordinates found for ${locationName}`);
+                return;
+            }
+
+            const name = data[0].name;
+            const lat = data[0].lat;
+            const lon = data[0].lon;
+            
+            currentWeatherView = 'hourly';
+            updateWeatherViewButtons();
+            getWeatherDetails(name, lat, lon);
+        })
+        .catch(() => {
+            alert('An error occurred while fetching the coordinates. Please try again.');
+        });
+}
+
 const createCurrentWeatherCard = (cityName, weatherItem) => {
     // Convert the dt data to dt_txt format for a more readable date
     const date = new Date(weatherItem.dt * 1000);
@@ -107,8 +184,18 @@ const createCurrentWeatherCard = (cityName, weatherItem) => {
         tempUnitSymbol = '°K';
     }
 
+    let favoriteIcon;
+
+    if (isLocationFavorited(cityName)) {
+        favoriteIcon = 'assets/favorite.png';
+    } else {
+        favoriteIcon = 'assets/unfavorite.png';
+    }
+
     return `<div class="details">
-                <h2>${cityName} (${formattedDate})</h2>
+                <h2>${cityName} (${formattedDate})
+                    <img src="${favoriteIcon}" class="favorite-icon" onclick="toggleFavoriteLocation('${cityName}')">
+                </h2>
                 <h4>Temperature: ${temperature}${tempUnitSymbol}</h4>
                 <h4>Wind: ${weatherItem.wind.speed} M/S</h4>
                 <h4>Humidity: ${weatherItem.main.humidity}%</h4>
@@ -347,18 +434,28 @@ const updateTempUnitButtons = () => {
 }
 
 const updateWeatherViewButtons = () => {
+    favoritesButton.classList.remove('active');
     dailyButton.classList.remove('active');
     hourlyButton.classList.remove('active');
 
-    if (currentWeatherView === 'daily') {
+    if (currentWeatherView === 'favorites') {
+        favoritesButton.classList.add('active');
+        dailyForecastDiv.style.display = 'none';
+        hourlyForecastDiv.style.display = 'none';
+        favoritesListDiv.style.display = 'block';
+        forecastTitle.textContent = 'Favorite Locations';
+        updateFavoritesList();
+    } else if (currentWeatherView === 'daily') {
         dailyButton.classList.add('active');
         dailyForecastDiv.style.display = 'block';
         hourlyForecastDiv.style.display = 'none';
+        favoritesListDiv.style.display = 'none';
         forecastTitle.textContent = '7-Day Forecast';
     } else {
         hourlyButton.classList.add('active');
         dailyForecastDiv.style.display = 'none';
         hourlyForecastDiv.style.display = 'block';
+        favoritesListDiv.style.display = 'none';
         forecastTitle.textContent = '24-Hour Forecast';
     }
 }
@@ -376,6 +473,11 @@ fahrenheitButton.addEventListener('click', () => {
 kelvinButton.addEventListener('click', () => {
     currentTempUnit = 'kelvin';
     updateTempUnitButtons();
+});
+
+favoritesButton.addEventListener('click', () => {
+    currentWeatherView = 'favorites';
+    updateWeatherViewButtons();
 });
 
 dailyButton.addEventListener('click', () => {
