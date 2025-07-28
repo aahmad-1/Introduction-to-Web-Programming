@@ -42,6 +42,15 @@ h1 {
     border-radius: 4px;
     border: 1px solid #ccc;
 }
+.weather-input .lat-input{
+    margin: 5px 0 10px 0;
+}
+.weather-input .lon-input {
+    margin: 5px 0 10px 0;
+}
+.weather-input .lon-input {
+    margin-bottom: 20px;
+}
 .weather-input .separator {
     height: 1px;
     width: 100%;
@@ -73,6 +82,11 @@ h1 {
 }
 .weather-input .location-btn {
     background: #6C757D;
+    margin-bottom: 0;
+}
+.weather-input .coordinates-btn {
+    background: #41518f;
+    margin-bottom: 20px;
 }
 .weather-data {
     width: 100%;
@@ -295,3 +309,4 @@ h1 {
         padding: 12px 8px;
     }
 }
+

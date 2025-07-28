@@ -1,9 +1,13 @@
 const cityInput = document.querySelector('.city-input');
+const latInput = document.querySelector('.lat-input');
+const lonInput = document.querySelector('.lon-input');
 
 const userLocationButton = document.querySelector('.location-btn');
 const searchButton = document.querySelector('.search-btn');
+const coordinatesButton = document.querySelector('.coordinates-btn');
 
 const celsiusButton = document.querySelector('.celsius-btn');
+const fahrenheitButton = document.querySelector('.fahrenheit-btn');
 const kelvinButton = document.querySelector('.kelvin-btn');
 
 const forecastTitle = document.querySelector('.forecast-title');
@@ -20,16 +24,68 @@ let currentTempUnit = 'celsius';
 let currentCityName = ''; 
 let currentLat = null;
 let currentLon = null;
-let currentWeatherView = 'daily';
+let currentWeatherView = 'hourly';
 
 const API_KEY = '7572b5fbf535d95745474fe2a0f77816';
 
 const convertTemp = (temp, unit) => {
     if (unit == 'kelvin'){
         return (temp + 273.15).toFixed(2);
+    } else if (unit == 'fahrenheit') {
+        return ((temp * 9/5) + 32).toFixed(2);
     } else {
       return temp.toFixed(2);
     }
+}
+
+const changeBackground = (weatherData) => {
+    const weatherConditionIcon = weatherData.weather[0].icon;
+    const bodyElement = document.body;
+
+    let backgroundImageURL = '';
+
+    if (weatherConditionIcon === '01d') {
+        backgroundImageURL = 'backgrounds/clear_sky_day.jpg';
+    } else if (weatherConditionIcon === '01n') {
+        backgroundImageURL = 'backgrounds/clear_sky_night.jpg';
+    } else if (weatherConditionIcon == '02d') {
+        backgroundImageURL = 'backgrounds/few_clouds_day.jpg';
+    } else if (weatherConditionIcon == '02n') {
+        backgroundImageURL = 'backgrounds/few_clouds_night.jpg';
+    } else if (weatherConditionIcon == '03d') {
+        backgroundImageURL = 'backgrounds/scattered_clouds_day.jpg';
+    } else if (weatherConditionIcon == '03n') {
+        backgroundImageURL = 'backgrounds/scattered_clouds_night.jpg';
+    } else if (weatherConditionIcon == '04d') {
+        backgroundImageURL = 'backgrounds/broken_clouds_day.jpg';
+    } else if (weatherConditionIcon == '04d') {
+        backgroundImageURL = 'backgrounds/broken_clouds_night.jpg';
+    } else if (weatherConditionIcon == '09d' || weatherConditionIcon == '09n') {
+        backgroundImageURL = 'backgrounds/shower_rain.jpg';
+    } else if (weatherConditionIcon == '10d') {
+        backgroundImageURL = 'backgrounds/rain_day.jpg';
+    } else if (weatherConditionIcon == '10n') { 
+        backgroundImageURL = 'backgrounds/rain_night.jpg';
+    } else if (weatherConditionIcon == '11d' || weatherConditionIcon == '11n') {
+        backgroundImageURL = 'backgrounds/thunderstorm.jpg';
+    } else if (weatherConditionIcon == '13d') {
+        backgroundImageURL = 'backgrounds/snow_day.jpg';
+    } else if (weatherConditionIcon == '13n') {
+        backgroundImageURL = 'backgrounds/snow_night.jpg';
+    } else if (weatherConditionIcon == '50d' || weatherConditionIcon == '50n') {
+        backgroundImageURL = 'backgrounds/mist.jpg';         
+    } else {
+        return;
+    }
+
+    if (backgroundImageURL) {
+        bodyElement.style.backgroundImage = `url(${backgroundImageURL})`;
+        bodyElement.style.backgroundSize = 'cover';
+        bodyElement.style.backgroundPosition = 'center';
+        bodyElement.style.backgroundRepeat = 'no-repeat';
+        bodyElement.style.backgroundColor = '';
+    }
+
 }
 
 const createCurrentWeatherCard = (cityName, weatherItem) => {
@@ -45,6 +101,8 @@ const createCurrentWeatherCard = (cityName, weatherItem) => {
     let tempUnitSymbol;
     if (currentTempUnit === 'celsius') {
         tempUnitSymbol = '°C';
+    } else if (currentTempUnit === 'fahrenheit') {
+        tempUnitSymbol = '°F';
     } else {
         tempUnitSymbol = '°K';
     }
@@ -74,6 +132,8 @@ const createDailyWeatherCard = (weatherItem, index) => {
     let tempUnitSymbol;
     if (currentTempUnit === 'celsius') {
         tempUnitSymbol = '°C';
+    } else if (currentTempUnit === 'fahrenheit') {
+        tempUnitSymbol = '°F';
     } else {
         tempUnitSymbol = '°K';
     }
@@ -81,7 +141,7 @@ const createDailyWeatherCard = (weatherItem, index) => {
     if(index === 0) {   //index 0 is for todays weather. 
         return '';      // However, we already have it in the current weather card using the "Current Weather Data" api. 
                         // I noticed the "Current Weather Data" api gives a more accurate data for the current day
-                        // compared to the current day of the "Daily Forecast 16 day" api.
+                        // compared to the current day of the "Daily Forecast 16 day" api . 
         
     } else { //forecast cards for next 7 days after today
         return `<li class="card">
@@ -102,6 +162,8 @@ const createHourlyWeatherCard = (weatherItem) => {
     let tempUnitSymbol;
     if (currentTempUnit === 'celsius') {
         tempUnitSymbol = '°C';
+    } else if (currentTempUnit === 'fahrenheit') {
+        tempUnitSymbol = '°F';
     } else {
         tempUnitSymbol = '°K';
     }
@@ -122,8 +184,8 @@ const getWeatherDetails = (name, lat, lon) => {
     currentLat = lat;
     currentLon = lon;
 
+    const CURRENT_WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;    
     const DAILY_WEATHER_API_URL = `http://api.openweathermap.org/data/2.5/forecast/daily?lat=${lat}&lon=${lon}&cnt=8&appid=${API_KEY}&units=metric`;
-    const CURRENT_WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
     const HOURLY_WEATHER_API_URL = `https://pro.openweathermap.org/data/2.5/forecast/hourly?lat=${lat}&lon=${lon}&appid=${API_KEY}&cnt=24&units=metric`;
 
         cityInput.value = "";
@@ -134,8 +196,9 @@ const getWeatherDetails = (name, lat, lon) => {
     fetch(CURRENT_WEATHER_API_URL)
         .then(response => response.json())
         .then(currentData => {
-            //console.log(currentData); //show current weather for city in console
+            console.log(currentData); //show current weather for city in console
             currentWeatherDiv.insertAdjacentHTML('beforeend', createCurrentWeatherCard(name, currentData));
+            changeBackground(currentData);
         })
         .catch(() => {
             alert('An error occurred while fetching the current forecast data. Please try again.');
@@ -145,7 +208,7 @@ const getWeatherDetails = (name, lat, lon) => {
     fetch(DAILY_WEATHER_API_URL)
         .then(response => response.json())
         .then(dailyData => {
-            console.log(dailyData); //show 7 days forecast for location in console
+            //console.log(dailyData); //show 7 days forecast for location in console
             const sevenDayForecast = dailyData.list
             sevenDayForecast.forEach((dailyData, index) => {
                 dailyWeatherCardsDiv.insertAdjacentHTML('beforeend', createDailyWeatherCard(dailyData, index));
@@ -159,7 +222,7 @@ const getWeatherDetails = (name, lat, lon) => {
     fetch(HOURLY_WEATHER_API_URL)
         .then(response => response.json())
         .then(hourlyData => {
-            //console.log(hourlyData); //show hourly forecast for location in console
+            console.log(hourlyData); //show hourly forecast for location in console
             const hourlyForecast = hourlyData.list;
             hourlyForecast.forEach((hourlyData) => {
                 hourlyWeatherCardsDiv.insertAdjacentHTML('beforeend', createHourlyWeatherCard(hourlyData));
@@ -196,16 +259,57 @@ const getCityCoordinates = () => {
 
 }
 
+const getLocationByCoordinates = () => {
+    const lat = parseFloat(latInput.value.trim());
+    const lon = parseFloat(lonInput.value.trim());
+
+    if(!lat || !lon) {
+        alert('Please enter valid latitude and longitude values.');
+        return;
+    }
+
+    if (lat < -90 || lat > 90) {
+        alert('Latitude must be between -90 and 90 degrees.');
+        return;
+    }
+
+    if (lon < -180 || lon > 180) {
+        alert('Longitude must be between -180 and 180 degrees.');
+        return;
+    }
+
+    const REVERSE_GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
+    
+    fetch(REVERSE_GEOCODING_API_URL)
+        .then(response => response.json())
+        .then(data => {
+            //console.log(data); //find where their city name is stored
+            let name;
+            if(!data.length) {
+                name = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+            } else {
+                name = data[0].name;
+            }
+            
+            getWeatherDetails(name, lat, lon);
+        })
+        .catch(() => {
+            alert('An error occurred while fetching the location data. Please try again.');
+        });
+
+}
+
 const getUserLocation = () => {
     navigator.geolocation.getCurrentPosition(
         (position) => {
+            //console.log(position); //show user location in console and find where the lat and lon are stored
             const latitude = position.coords.latitude;
             const longitude = position.coords.longitude;
             const REVERSE_GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${API_KEY}`;
             fetch(REVERSE_GEOCODING_API_URL)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data); 
+                    //console.log(data); //find where their city name is stored
                     if(!data.length)
                         return alert(`No coordinates found for this location`);
 
@@ -226,10 +330,13 @@ const getUserLocation = () => {
 
 const updateTempUnitButtons = () => {
     celsiusButton.classList.remove('active');
+    fahrenheitButton.classList.remove('active');
     kelvinButton.classList.remove('active');
   
     if (currentTempUnit === 'celsius') {
         celsiusButton.classList.add('active');
+    } else if (currentTempUnit === 'fahrenheit') {
+        fahrenheitButton.classList.add('active');
     } else {
         kelvinButton.classList.add('active');
     }
@@ -261,6 +368,11 @@ celsiusButton.addEventListener('click', () => {
     updateTempUnitButtons();
 });
 
+fahrenheitButton.addEventListener('click', () => {
+    currentTempUnit = 'fahrenheit';
+    updateTempUnitButtons();
+});
+
 kelvinButton.addEventListener('click', () => {
     currentTempUnit = 'kelvin';
     updateTempUnitButtons();
@@ -278,5 +390,6 @@ hourlyButton.addEventListener('click', () => {
 
 userLocationButton.addEventListener('click', getUserLocation);
 searchButton.addEventListener('click', getCityCoordinates);
+coordinatesButton.addEventListener('click', getLocationByCoordinates);
 
 updateWeatherViewButtons();
