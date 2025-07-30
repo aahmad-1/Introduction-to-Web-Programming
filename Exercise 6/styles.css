@@ -151,7 +151,6 @@ h1 {
     }
 }
 
-/* Chart styling adjustments */
 .frappe-chart .title {
     font-size: 18px !important;
     font-weight: 500 !important;
@@ -162,7 +161,6 @@ h1 {
     padding: 0 !important;
 }
 
-/* Form styling improvements */
 form {
     display: flex;
     flex-direction: column;

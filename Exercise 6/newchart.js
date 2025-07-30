@@ -12,8 +12,6 @@ let chart;
 let currentMunicipality = "whole country";
 
 function initializeCode() {
-    // Get the municipality from the previous page (default to whole country)
-    // In a real application, you might pass this via URL parameters or localStorage
     fetchBirthDeathData("SSS");
 }
 
@@ -66,14 +64,12 @@ async function fetchBirthDeathData(areaCode) {
         // Log the response to understand the structure
         console.log('API Response:', data);
         
-        // Get the dimension information
         const dimensions = data.dimension;
         const values = data.value;
         
         console.log('Dimensions:', dimensions);
         console.log('Raw values:', values);
         
-        // Get the size of each dimension
         const vuosiSize = dimensions.Vuosi.category.index ? Object.keys(dimensions.Vuosi.category.index).length : 22;
         const alueSize = dimensions.Alue.category.index ? Object.keys(dimensions.Alue.category.index).length : 1;
         const tiedotSize = dimensions.Tiedot.category.index ? Object.keys(dimensions.Tiedot.category.index).length : 2;
@@ -82,10 +78,7 @@ async function fetchBirthDeathData(areaCode) {
         
         const birthData = [];
         const deathData = [];
-        
-        // In json-stat2 format, data is organized by the rightmost dimension first
-        // Structure: Vuosi x Alue x Tiedot
-        // So for each year, we have [birth_value, death_value]
+
         for (let yearIndex = 0; yearIndex < vuosiSize; yearIndex++) {
             const baseIndex = yearIndex * tiedotSize;
             birthData.push(values[baseIndex]);     // vm01 (births)
@@ -107,11 +100,9 @@ function createChart(birthData, deathData) {
         years.push(year.toString());
     }
 
-    // Clear the chart container
     const chartContainer = document.getElementById('chart');
     chartContainer.innerHTML = '';
 
-    // Check if frappe is available
     if (typeof frappe === 'undefined') {
         console.error('Frappe Charts library is not loaded');
         chartContainer.innerHTML = '<p>Error: Chart library not loaded</p>';

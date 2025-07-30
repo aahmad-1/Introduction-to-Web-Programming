@@ -20,7 +20,6 @@ function initializeCode() {
     // Get municipality codes
     fetchMunicipalityCodes();
     
-    // Set up form submission
     const form = document.querySelector('form');
     const submitButton = document.getElementById('submit-data');
     
@@ -29,7 +28,6 @@ function initializeCode() {
         handleMunicipalitySearch();
     });
     
-    // Set up prediction button
     const addDataButton = document.getElementById('add-data');
     addDataButton.addEventListener('click', addPrediction);
 }
@@ -98,7 +96,6 @@ async function fetchPopulationData(areaCode) {
         const data = await response.json();
         const values = data.value;
         
-        // Store the exact values from the API without any modification
         currentData = [...values];
         createChart(currentData);
     } catch (error) {
@@ -116,7 +113,6 @@ function createChart(data) {
         chart.destroy();
     }
 
-    // Clear the chart container
     const chartContainer = document.getElementById('chart');
     chartContainer.innerHTML = '';
 
@@ -140,13 +136,11 @@ function handleMunicipalitySearch() {
     const searchTerm = input.value.trim().toLowerCase();
     
     if (!searchTerm) {
-        // Default to whole country
         currentMunicipality = "whole country";
         fetchPopulationData("SSS");
         return;
     }
     
-    // Search for municipality code
     const municipalityCode = municipalityCodes[searchTerm];
     
     if (municipalityCode) {
@@ -183,7 +177,6 @@ function addPrediction() {
         chart.destroy();
     }
     
-    // Clear the chart container
     const chartContainer = document.getElementById('chart');
     chartContainer.innerHTML = '';
     
