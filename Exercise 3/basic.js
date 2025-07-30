@@ -13,10 +13,8 @@ function initializeCode() {
         try {
             const tbody = document.getElementById("data-added");
             
-            // Clear any existing data
             tbody.innerHTML = "";
             
-            // Fetch population and employment query JSON files
             const populationQueryResponse = await fetch("population_query.json");
             if (!populationQueryResponse.ok) {
                 throw new Error(`Failed to fetch population query: ${populationQueryResponse.status}`);
@@ -29,7 +27,6 @@ function initializeCode() {
             }
             const employmentQuery = await employmentQueryResponse.json();
             
-            // Fetch population & employment data from the APIs
             const populationResponse = await fetch("https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/vaerak/statfin_vaerak_pxt_11ra.px", {
                 method: 'POST',
                 headers: {
@@ -61,7 +58,6 @@ function initializeCode() {
             const populationValues = populationData.value;
             const employmentValues = employmentData.value;
             
-            // Display data in the table
             municipalities.forEach((municipality, index) => {
                 const population = populationValues[index];
                 const employment = employmentValues[index];
@@ -81,7 +77,6 @@ function initializeCode() {
                     <td>${employmentPercentage}</td>
                 `;
                 
-                // Row colors based on the employment percentage
                 if (population > 0) {
                     const percentageValue = parseFloat(employmentPercentage);
                     if (percentageValue > 45) {
@@ -91,7 +86,6 @@ function initializeCode() {
                     }
                 }
                 
-                // Add row to table
                 tbody.appendChild(row);
             });
             
