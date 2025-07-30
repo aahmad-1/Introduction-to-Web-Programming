@@ -12,13 +12,11 @@ body {
     background-color: #eceff1;
 }
 
-/* Show container styling */
 .show-container {
     padding-left: 10px;
     padding-right: 10px;
 }
 
-/* Show data styling */
 .show-data {
     width: 100%;
     background-color: #cfd8dc;

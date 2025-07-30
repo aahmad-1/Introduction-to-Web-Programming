@@ -13,7 +13,6 @@ function initializeCode() {
     const submitData = document.getElementById("submit-data");
     const showContainer = document.querySelector(".show-container");
 
-    // Handle button click
     submitData.addEventListener("click", async function(event) {
         event.preventDefault();
         await searchShows();
@@ -37,7 +36,6 @@ function initializeCode() {
     function displayShows(shows) {
         const container = document.querySelector('.show-container');
         
-        // Clear previous results
         container.innerHTML = '';
 
         if (shows.length === 0) {
@@ -48,28 +46,22 @@ function initializeCode() {
         shows.forEach(item => {
             const show = item.show;
             
-            // Create show-data element
             const showDataDiv = document.createElement('div');
             showDataDiv.className = 'show-data';
 
-            // Create image 
             const img = document.createElement('img');
             img.src = show.image ? show.image.medium : 'https://dummyimage.com/210x295/000/fff.png&text=No+poster+available'; //placeholder image
             img.alt = show.name;
 
-            // Create show-info div
             const showInfoDiv = document.createElement('div');
             showInfoDiv.className = 'show-info';
 
-            // Create title
             const title = document.createElement('h1');
             title.textContent = show.name;
 
-            // Create summary
             const summaryDiv = document.createElement('div');
             summaryDiv.innerHTML = show.summary || '<p>No summary available.</p>';
 
-            // Append elements
             showInfoDiv.appendChild(title);
             showInfoDiv.appendChild(summaryDiv);
             
