@@ -287,7 +287,7 @@ const createHourlyWeatherCard = (weatherItem) => {
     return `<li class="hourly-card">
                 <h4>${time}</h4>
                 <img src="https://openweathermap.org/img/wn/${weatherItem.weather[0].icon}@2x.png" alt="weather-icon">
-                <h4>${temperature}${tempUnitSymbol}</h4>
+                <h5 class="weather-description">${weatherItem.weather[0].description}</h5> <h4>${temperature}${tempUnitSymbol}</h4>
                 <p>Wind: ${weatherItem.wind.speed} M/S</p>
                 <p>Humidity: ${weatherItem.main.humidity}%</p>
             </li>`
