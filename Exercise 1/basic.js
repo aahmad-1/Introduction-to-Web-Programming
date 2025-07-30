@@ -10,7 +10,6 @@ if(document.readyState !== "loading") {
 
 function initializedCode() {
     
-    // Change "Hello world" to "Moi maailma" & print "hello world" to console
     const changeButton = document.getElementById("my-button");
     const heading1 = document.getElementById("Heading1");
     
@@ -19,7 +18,6 @@ function initializedCode() {
         heading1.textContent = "Moi maailma";
     });
 
-    // Add items/text to the list
     const list = document.getElementById("my-list");
     const addData = document.getElementById("add-data");
     const inputItem = document.getElementById("input-item");
