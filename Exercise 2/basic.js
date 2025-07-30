@@ -19,19 +19,19 @@ function initializedCode() {
         const admin = document.getElementById("input-admin").checked; 
         const image = document.getElementById("input-image").files[0];
         const table = document.getElementById("user-table");
-        const tableBody = table.querySelector('tbody'); // Get the table body specifically
+        const tableBody = table.querySelector('tbody'); 
 
 
         let usernameExists = false;
         for (let i = 0; i < tableBody.rows.length; i++) {
             const tableRow = tableBody.rows[i];
-            if (tableRow.cells[0].textContent === username) { // Check if username already exists
+            if (tableRow.cells[0].textContent === username) {
                 usernameExists = true; 
-                if (email !== "") { //If an email is given, update the email box
+                if (email !== "") { 
                     tableRow.cells[1].textContent = email;
                 }
                 tableRow.cells[2].textContent = admin ? "X" : "-"; 
-                if (image) { // If an image is uploaded, update the image box
+                if (image) { 
                     const img = document.createElement("img");
                     img.src = URL.createObjectURL(image);
                     img.width = 64;
@@ -44,7 +44,6 @@ function initializedCode() {
         }
 
         
-        // If username does not exist, create a new row and  append it to the table body
         if (!usernameExists) {     
             const newRow = document.createElement("tr");
             newRow.align = "center"; 
@@ -71,7 +70,6 @@ function initializedCode() {
             tableBody.appendChild(newRow); 
         }
 
-        // Clear form fields
         document.getElementById("input-username").value = "";
         document.getElementById("input-email").value = "";
         document.getElementById("input-admin").checked = false;
@@ -79,7 +77,6 @@ function initializedCode() {
     });
     
 
-    // Add event listener for empty table button
     emptyDataButton.addEventListener("click", function() {
         const table = document.getElementById("user-table");
         const tableBody = table.querySelector('tbody'); 
