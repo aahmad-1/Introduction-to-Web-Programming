@@ -15,6 +15,8 @@ const favoritesButton = document.querySelector('.favorites-btn');
 const dailyButton = document.querySelector('.daily-btn');
 const hourlyButton = document.querySelector('.hourly-btn');
 
+const changeBackgroundButton = document.querySelector('.change-background-btn');
+
 const currentWeatherDiv = document.querySelector('.current-weather');
 const dailyWeatherCardsDiv = document.querySelector('.weather-cards');
 const hourlyWeatherCardsDiv = document.querySelector('.hourly-weather-cards');
@@ -29,6 +31,8 @@ let currentLat = null;
 let currentLon = null;
 let currentWeatherView = 'hourly';
 let favoriteLocations = [];
+let isWeatherBackground = false;
+let currentWeatherData = null;
 
 const API_KEY = '7572b5fbf535d95745474fe2a0f77816';
 
@@ -46,50 +50,75 @@ const changeBackground = (weatherData) => {
     const weatherConditionIcon = weatherData.weather[0].icon;
     const bodyElement = document.body;
 
-    let backgroundImageURL = '';
+    let backgroundImage = '';
 
     if (weatherConditionIcon === '01d') {
-        backgroundImageURL = 'backgrounds/clear_sky_day.jpg';
+        backgroundImage = 'backgrounds/clear_sky_day.jpg';
     } else if (weatherConditionIcon === '01n') {
-        backgroundImageURL = 'backgrounds/clear_sky_night.jpg';
+        backgroundImage = 'backgrounds/clear_sky_night.jpg';
     } else if (weatherConditionIcon == '02d') {
-        backgroundImageURL = 'backgrounds/few_clouds_day.jpg';
+        backgroundImage = 'backgrounds/few_clouds_day.jpg';
     } else if (weatherConditionIcon == '02n') {
-        backgroundImageURL = 'backgrounds/few_clouds_night.jpg';
+        backgroundImage = 'backgrounds/few_clouds_night.jpg';
     } else if (weatherConditionIcon == '03d') {
-        backgroundImageURL = 'backgrounds/scattered_clouds_day.jpg';
+        backgroundImage = 'backgrounds/scattered_clouds_day.jpg';
     } else if (weatherConditionIcon == '03n') {
-        backgroundImageURL = 'backgrounds/scattered_clouds_night.jpg';
+        backgroundImage = 'backgrounds/scattered_clouds_night.jpg';
     } else if (weatherConditionIcon == '04d') {
-        backgroundImageURL = 'backgrounds/broken_clouds_day.jpg';
-    } else if (weatherConditionIcon == '04d') {
-        backgroundImageURL = 'backgrounds/broken_clouds_night.jpg';
+        backgroundImage = 'backgrounds/broken_clouds_day.jpg';
+    } else if (weatherConditionIcon == '04n') {
+        backgroundImage = 'backgrounds/broken_clouds_night.jpg';
     } else if (weatherConditionIcon == '09d' || weatherConditionIcon == '09n') {
-        backgroundImageURL = 'backgrounds/shower_rain.jpg';
+        backgroundImage = 'backgrounds/shower_rain.jpg';
     } else if (weatherConditionIcon == '10d') {
-        backgroundImageURL = 'backgrounds/rain_day.jpg';
+        backgroundImage = 'backgrounds/rain_day.jpg';
     } else if (weatherConditionIcon == '10n') { 
-        backgroundImageURL = 'backgrounds/rain_night.jpg';
+        backgroundImage = 'backgrounds/rain_night.jpg';
     } else if (weatherConditionIcon == '11d' || weatherConditionIcon == '11n') {
-        backgroundImageURL = 'backgrounds/thunderstorm.jpg';
+        backgroundImage = 'backgrounds/thunderstorm.jpg';
     } else if (weatherConditionIcon == '13d') {
-        backgroundImageURL = 'backgrounds/snow_day.jpg';
+        backgroundImage = 'backgrounds/snow_day.jpg';
     } else if (weatherConditionIcon == '13n') {
-        backgroundImageURL = 'backgrounds/snow_night.jpg';
+        backgroundImage = 'backgrounds/snow_night.jpg';
     } else if (weatherConditionIcon == '50d' || weatherConditionIcon == '50n') {
-        backgroundImageURL = 'backgrounds/mist.jpg';         
+        backgroundImage = 'backgrounds/mist.jpg';         
     } else {
         return;
     }
 
-    if (backgroundImageURL) {
-        bodyElement.style.backgroundImage = `url(${backgroundImageURL})`;
+    if (backgroundImage) {
+        bodyElement.style.backgroundImage = `url(${backgroundImage})`;
         bodyElement.style.backgroundSize = 'cover';
         bodyElement.style.backgroundPosition = 'center';
-        bodyElement.style.backgroundRepeat = 'no-repeat';
-        bodyElement.style.backgroundColor = '';
+        isWeatherBackground = true;
+        updateChangeBackgroundButton();
     }
+}
 
+const changeBackgroundToDefault = () => {
+    const bodyElement = document.body;
+    bodyElement.style.backgroundImage = '';
+    bodyElement.style.backgroundColor = '#E3F2FD';
+    isWeatherBackground = false;
+    updateChangeBackgroundButton();
+}
+
+const updateChangeBackgroundButton = () => {
+    if (isWeatherBackground) {
+        changeBackgroundButton.textContent = 'Change background to default';
+    } else {
+        changeBackgroundButton.textContent = 'Change background to reflect weather';
+    }
+}
+
+const toggleBackground = () => {
+    if (isWeatherBackground) {
+        changeBackgroundToDefault();
+    } else {
+        if (currentWeatherData) {
+            changeBackground(currentWeatherData);
+        }
+    }
 }
 
 const isLocationFavorited = (locationName) => {
@@ -284,8 +313,11 @@ const getWeatherDetails = (name, lat, lon) => {
         .then(response => response.json())
         .then(currentData => {
             console.log(currentData); //show current weather for city in console
+            currentWeatherData = currentData;
             currentWeatherDiv.insertAdjacentHTML('beforeend', createCurrentWeatherCard(name, currentData));
-            changeBackground(currentData);
+            if (isWeatherBackground) {
+                changeBackground(currentData);
+            }
         })
         .catch(() => {
             alert('An error occurred while fetching the current forecast data. Please try again.');
@@ -490,8 +522,11 @@ hourlyButton.addEventListener('click', () => {
     updateWeatherViewButtons();
 });
 
+changeBackgroundButton.addEventListener('click', toggleBackground);
+
 userLocationButton.addEventListener('click', getUserLocation);
 searchButton.addEventListener('click', getCityCoordinates);
 coordinatesButton.addEventListener('click', getLocationByCoordinates);
 
 updateWeatherViewButtons();
+updateChangeBackgroundButton();
