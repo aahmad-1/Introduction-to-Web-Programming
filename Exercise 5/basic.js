@@ -101,7 +101,6 @@ async function fetchMigration() {
     
     const data = await response.json();
     
-    // Parse the data
     const areaIndexes = data.dimension.Alue.category.index;
     const dataValues = data.value;
     
@@ -129,7 +128,6 @@ function calculateColor(positiveMigration, negativeMigration) {
 }
 
 async function initializeMap(data) {
-    // initialize the map & background image
     let map = L.map('map', {
         minZoom: -3,
     })
@@ -139,7 +137,6 @@ async function initializeMap(data) {
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // display geoJSON & migration data
     const migrationData = await fetchMigration();
     
     let geoJSON = L.geoJSON(data, {
@@ -150,15 +147,12 @@ async function initializeMap(data) {
             let positiveMigration = migrationInfo.positive;
             let negativeMigration = migrationInfo.negative;
 
-            //  tooltip on hover
             layer.bindTooltip(feature.properties.nimi);
             
-            //  popup on click
             layer.on('click', function() {
                 layer.bindPopup(`<b>${feature.properties.nimi}</b><br>Positive Migration: ${positiveMigration}<br>Negative Migration: ${negativeMigration}`).openPopup();
             });
             
-            //  apply color
             let color = calculateColor(positiveMigration, negativeMigration);
             layer.setStyle({
                 fillColor: color,
