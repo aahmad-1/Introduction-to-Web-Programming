@@ -3,7 +3,7 @@ if(document.readyState !== "loading") {
     initializeCode();
 } else {
     document.addEventListener("DOMContentLoaded", function() {
-        console.log("Document is currently loading!");
+        console.log("Document is ready after waiting!");
         initializeCode();
     });
 }
