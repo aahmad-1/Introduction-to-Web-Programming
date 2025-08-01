@@ -16,17 +16,7 @@ function initializeCode() {
             tbody.innerHTML = "";
             
             const populationQueryResponse = await fetch("population_query.json");
-            if (!populationQueryResponse.ok) {
-                throw new Error(`Failed to fetch population query: ${populationQueryResponse.status}`);
-            }
             const populationQuery = await populationQueryResponse.json();
-            
-            const employmentQueryResponse = await fetch("employment_query.json");
-            if (!employmentQueryResponse.ok) {
-                throw new Error(`Failed to fetch employment query: ${employmentQueryResponse.status}`);
-            }
-            const employmentQuery = await employmentQueryResponse.json();
-            
             const populationResponse = await fetch("https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/vaerak/statfin_vaerak_pxt_11ra.px", {
                 method: 'POST',
                 headers: {
@@ -34,12 +24,11 @@ function initializeCode() {
                 },
                 body: JSON.stringify(populationQuery)
             });
-            
-            if (!populationResponse.ok) {
-                throw new Error(`Population data fetch failed with status ${populationResponse.status}`);
-            }
             const populationData = await populationResponse.json();
+
             
+            const employmentQueryResponse = await fetch("employment_query.json");
+            const employmentQuery = await employmentQueryResponse.json();
             const employmentResponse = await fetch("https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/tyokay/statfin_tyokay_pxt_115b.px", {
                 method: 'POST',
                 headers: {
@@ -47,13 +36,10 @@ function initializeCode() {
                 },
                 body: JSON.stringify(employmentQuery)
             });
-            
-            if (!employmentResponse.ok) {
-                throw new Error(`Employment data fetch failed with status ${employmentResponse.status}`);
-            }
             const employmentData = await employmentResponse.json();
+
             
-            // Extract data
+            // Extract data (indexes according to moodle)
             const municipalities = Object.values(populationData.dimension.Alue.category.label);
             const populationValues = populationData.value;
             const employmentValues = employmentData.value;
@@ -70,12 +56,11 @@ function initializeCode() {
                 
                 const row = document.createElement("tr");
                 
-                row.innerHTML = `
-                    <td>${municipality}</td>
+                row.innerHTML = 
+                    `<td>${municipality}</td>
                     <td>${population}</td>
                     <td>${employment}</td>
-                    <td>${employmentPercentage}</td>
-                `;
+                    <td>${employmentPercentage}</td>`;
                 
                 if (population > 0) {
                     const percentageValue = parseFloat(employmentPercentage);
