@@ -50,8 +50,13 @@ function initializeCode() {
             showDataDiv.className = 'show-data';
 
             const img = document.createElement('img');
-            img.src = show.image ? show.image.medium : 'https://dummyimage.com/210x295/000/fff.png&text=No+poster+available'; //placeholder image
-            img.alt = show.name;
+            let imageUrl;
+            if (show.image) {
+                imageUrl = show.image.medium;
+            } else {
+                imageUrl = 'https://dummyimage.com/210x295/000/fff.png&text=No+poster+available';
+            }
+            img.src = imageUrl;
 
             const showInfoDiv = document.createElement('div');
             showInfoDiv.className = 'show-info';
