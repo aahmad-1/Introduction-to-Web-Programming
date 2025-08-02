@@ -153,19 +153,14 @@ const updateFavoriteIcon = (locationName) => {
 
 const updateFavoritesList = () => {
     favoriteLocationsList.innerHTML = '';
-    
-    if (favoriteLocations.length === 0) {
-        alert('No locations have been favorited.');
-        return;
-    }
-    
+
     favoriteLocations.forEach(locationName => {
         const listItem = document.createElement('li');
         listItem.className = 'favorite-item';
-        listItem.innerHTML = `
-            <span class="location-name">${locationName}</span>
-            <button class="check-weather-btn" onclick="checkWeatherFromFavoritesList('${locationName}')">Check Weather</button>
-        `;
+        listItem.innerHTML = 
+            `<span class="location-name">${locationName}</span>
+            <button class="check-weather-btn" onclick="checkWeatherFromFavoritesList('${locationName}')">Check Weather</button>`;
+
         favoriteLocationsList.appendChild(listItem);
     });
 }
@@ -203,6 +198,11 @@ const createCurrentWeatherCard = (cityName, weatherItem) => {
         year: 'numeric'
     });
 
+    const formattedTime = date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+    });
+
     const temperature = convertTemp(weatherItem.main.temp, currentTempUnit)
     let tempUnitSymbol;
     if (currentTempUnit === 'celsius') {
@@ -222,7 +222,7 @@ const createCurrentWeatherCard = (cityName, weatherItem) => {
     }
 
     return `<div class="details">
-                <h2>${cityName} (${formattedDate})
+                <h2>${cityName} (${formattedDate} ${formattedTime})
                     <img src="${favoriteIcon}" class="favorite-icon" onclick="toggleFavoriteLocation('${cityName}')">
                 </h2>
                 <h4>Temperature: ${temperature}${tempUnitSymbol}</h4>
@@ -272,7 +272,11 @@ const createDailyWeatherCard = (weatherItem, index) => {
 }
 
 const createHourlyWeatherCard = (weatherItem) => {
-    const time = weatherItem.dt_txt.split(' ')[1];
+    const date = new Date(weatherItem.dt * 1000);
+    const formattedTime = date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit'
+    });
 
     const temperature = convertTemp(weatherItem.main.temp, currentTempUnit);
     let tempUnitSymbol;
@@ -285,7 +289,7 @@ const createHourlyWeatherCard = (weatherItem) => {
     }
 
     return `<li class="hourly-card">
-                <h4>${time}</h4>
+                <h4>${formattedTime}</h4>
                 <img src="https://openweathermap.org/img/wn/${weatherItem.weather[0].icon}@2x.png" alt="weather-icon">
                 <h5 class="weather-description">${weatherItem.weather[0].description}</h5> <h4>${temperature}${tempUnitSymbol}</h4>
                 <p>Wind: ${weatherItem.wind.speed} M/S</p>
