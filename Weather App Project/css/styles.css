@@ -439,3 +439,27 @@ body {
         padding: 6px 12px;
     }
 }
+#hourly-chart-container {
+    height: 300px;
+    margin-bottom: 20px;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+}
+
+.hourly-weather-cards {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 10px; /* Add padding to prevent horizontal scrollbar from overlapping */
+    gap: 15px;
+}
+
+.hourly-weather-cards::-webkit-scrollbar {
+    height: 8px;
+}
+
+.hourly-weather-cards::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px;
+}

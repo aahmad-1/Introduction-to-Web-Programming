@@ -34,7 +34,8 @@ let favoriteLocations = [];
 let isWeatherBackground = false;
 let currentWeatherData = null;
 
-const API_KEY = '7572b5fbf535d95745474fe2a0f77816';
+const OPENWEATHER_API_KEY = '7572b5fbf535d95745474fe2a0f77816';
+const STORMGLASS_API_KEY = 'a73d4662-6f43-11f0-b926-0242ac130006-a73d46bc-6f43-11f0-b926-0242ac130006';
 
 const convertTemp = (temp, unit) => {
     if (unit == 'kelvin'){
@@ -166,7 +167,7 @@ const updateFavoritesList = () => {
 }
 
 const checkWeatherFromFavoritesList = (locationName) => {
-    const GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/direct?q=${locationName}&limit=1&appid=${API_KEY}`;
+    const GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/direct?q=${locationName}&limit=1&appid=${OPENWEATHER_API_KEY}`;
 
     fetch(GEOCODING_API_URL)
         .then(response => response.json())
@@ -256,8 +257,9 @@ const createDailyWeatherCard = (weatherItem, index) => {
 
     if(index === 0) {   //index 0 is for todays weather. 
         return '';      // However, we already have it in the current weather card using the "Current Weather Data" api. 
-                        // I noticed the "Current Weather Data" api gives a more accurate data for the current day
-                        // compared to the current day of the "Daily Forecast 16 day" api . 
+                        // I noticed the "Current Weather Data" api gives a more accurate data for the current weather
+                        // The current day of the "Daily Forecast 16 day" api gives the average temp of the whole day
+                        // which is less accurate. 
         
     } else { //forecast cards for next 7 days after today
         return `<li class="card">
@@ -304,19 +306,27 @@ const getWeatherDetails = (name, lat, lon) => {
     currentLat = lat;
     currentLon = lon;
 
-    const CURRENT_WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;    
-    const DAILY_WEATHER_API_URL = `http://api.openweathermap.org/data/2.5/forecast/daily?lat=${lat}&lon=${lon}&cnt=8&appid=${API_KEY}&units=metric`;
-    const HOURLY_WEATHER_API_URL = `https://pro.openweathermap.org/data/2.5/forecast/hourly?lat=${lat}&lon=${lon}&appid=${API_KEY}&cnt=24&units=metric`;
+    // Stormglass API parameters
+    const params = 'airTemperature';
+    const currentTime = new Date();
+    currentTime.setMinutes(0, 0, 0);
+    const startTimestamp = Math.floor(currentTime.getTime() / 1000);
+    const endTimestamp = startTimestamp + (24 * 60 * 60);
 
-        cityInput.value = "";
-        currentWeatherDiv.innerHTML = ""; 
-        dailyWeatherCardsDiv.innerHTML = "";
-        hourlyWeatherCardsDiv.innerHTML = "";
+    const CURRENT_WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OPENWEATHER_API_KEY}&units=metric`;
+    const DAILY_WEATHER_API_URL = `http://api.openweathermap.org/data/2.5/forecast/daily?lat=${lat}&lon=${lon}&cnt=8&appid=${OPENWEATHER_API_KEY}&units=metric`;
+    const HOURLY_WEATHER_API_URL = `https://pro.openweathermap.org/data/2.5/forecast/hourly?lat=${lat}&lon=${lon}&appid=${OPENWEATHER_API_KEY}&cnt=24&units=metric`;
+    const STORMGLASS_API_URL = `https://api.stormglass.io/v2/weather/point?lat=${lat}&lng=${lon}&params=${params}&start=${startTimestamp}&end=${endTimestamp}`;
+
+    cityInput.value = "";
+    currentWeatherDiv.innerHTML = "";
+    dailyWeatherCardsDiv.innerHTML = "";
+    hourlyWeatherCardsDiv.innerHTML = "";
 
     fetch(CURRENT_WEATHER_API_URL)
         .then(response => response.json())
         .then(currentData => {
-            console.log(currentData); //show current weather for city in console
+            //console.log(currentData); //find where the current weather data is stored in the api response
             currentWeatherData = currentData;
             currentWeatherDiv.insertAdjacentHTML('beforeend', createCurrentWeatherCard(name, currentData));
             if (isWeatherBackground) {
@@ -327,29 +337,79 @@ const getWeatherDetails = (name, lat, lon) => {
             alert('An error occurred while fetching the current forecast data. Please try again.');
         });
 
-
     fetch(DAILY_WEATHER_API_URL)
         .then(response => response.json())
         .then(dailyData => {
-            //console.log(dailyData); //show 7 days forecast for location in console
-            const sevenDayForecast = dailyData.list
+            //console.log(dailyData); //find where the daily weather data is stored in the api response
+            const sevenDayForecast = dailyData.list;
             sevenDayForecast.forEach((dailyData, index) => {
                 dailyWeatherCardsDiv.insertAdjacentHTML('beforeend', createDailyWeatherCard(dailyData, index));
-
             });
         })
         .catch(() => {
             alert('An error occurred while fetching the daily forecast data. Please try again.');
         });
-
+    
+    // --- Start of nested fetch for the hourly data and chart ---
     fetch(HOURLY_WEATHER_API_URL)
         .then(response => response.json())
-        .then(hourlyData => {
-            console.log(hourlyData); //show hourly forecast for location in console
-            const hourlyForecast = hourlyData.list;
+        .then(async hourlyOpenWeather => {
+            //console.log(hourlyOpenWeather); //find where all the hourly weather data is stored in the api response
+            const hourlyForecast = hourlyOpenWeather.list;
             hourlyForecast.forEach((hourlyData) => {
                 hourlyWeatherCardsDiv.insertAdjacentHTML('beforeend', createHourlyWeatherCard(hourlyData));
             });
+
+            try {
+                const stormglassAPIRespons = await fetch(STORMGLASS_API_URL, {
+                    headers: {
+                        'Authorization': STORMGLASS_API_KEY
+                    }
+                });
+                const hourlyStormglass = await stormglassAPIRespons.json();
+                //console.log(hourlyStormglass); //find where the temperature data is stored in the Stormglass API response
+                hourlyStormglass.hours = hourlyStormglass.hours.slice(1);
+
+
+                const labels = [];
+                const openWeatherTemps = [];
+                const stormglassTemps = [];
+
+                hourlyOpenWeather.list.forEach(openWeatherHourlyData => {
+                    const date = new Date(openWeatherHourlyData.dt * 1000);
+                    labels.push(date.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        hour12: true
+                    }));
+                    openWeatherTemps.push(openWeatherHourlyData.main.temp);
+                });
+
+                hourlyStormglass.hours.forEach(stormglassHourlyData => {
+                    stormglassTemps.push(stormglassHourlyData.airTemperature.sg);
+                });
+
+                const chartData = {
+                    labels: labels,
+                    datasets: [{
+                        name: 'OpenWeatherMap',
+                        values: openWeatherTemps
+                    }, {
+                        name: 'Stormglass',
+                        values: stormglassTemps
+                    }]
+                };
+
+                // Render the chart
+                new frappe.Chart("#hourly-chart-container", {
+                    title: "Hourly Temperature Forecast Comparison",
+                    data: chartData,
+                    type: 'line',
+                    height: 300,
+                    colors: ['#eb5146', '#21ba45']
+                });
+            } catch {
+                alert('An error occurred while fetching the Stormglass forecast data. Please try again.');
+            }
         })
         .catch(() => {
             alert('An error occurred while fetching the hourly forecast data. Please try again.');
@@ -361,7 +421,7 @@ const getCityCoordinates = () => {
     if(!cityName)
       return;
 
-    const GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=${API_KEY}`;
+    const GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=${OPENWEATHER_API_KEY}`;
 
     fetch(GEOCODING_API_URL)
         .then(response => response.json())
@@ -401,7 +461,7 @@ const getLocationByCoordinates = () => {
         return;
     }
 
-    const REVERSE_GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
+    const REVERSE_GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${OPENWEATHER_API_KEY}`;
     
     fetch(REVERSE_GEOCODING_API_URL)
         .then(response => response.json())
@@ -428,7 +488,7 @@ const getUserLocation = () => {
             //console.log(position); //show user location in console and find where the lat and lon are stored
             const latitude = position.coords.latitude;
             const longitude = position.coords.longitude;
-            const REVERSE_GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${API_KEY}`;
+            const REVERSE_GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${OPENWEATHER_API_KEY}`;
             fetch(REVERSE_GEOCODING_API_URL)
                 .then(response => response.json())
                 .then(data => {
