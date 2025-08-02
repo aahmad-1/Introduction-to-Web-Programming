@@ -350,7 +350,7 @@ const getWeatherDetails = (name, lat, lon) => {
             alert('An error occurred while fetching the daily forecast data. Please try again.');
         });
     
-    // --- Start of nested fetch for the hourly data and chart ---
+    //Fetching hourly weather data & graphing them    
     fetch(HOURLY_WEATHER_API_URL)
         .then(response => response.json())
         .then(async hourlyOpenWeather => {
@@ -399,7 +399,7 @@ const getWeatherDetails = (name, lat, lon) => {
                     }]
                 };
 
-                // Render the chart
+                // make the chart
                 new frappe.Chart("#hourly-chart-container", {
                     title: "Hourly Temperature Forecast Comparison",
                     data: chartData,
@@ -425,15 +425,15 @@ const getCityCoordinates = () => {
 
     fetch(GEOCODING_API_URL)
         .then(response => response.json())
-        .then(data => {
+        .then(cityData => {
             //console.log(data); //find where the city name, lat, and lon are in the api response
 
             if(!data.length)
               return alert(`No coordinates found for ${cityName}`);
 
-            const name = data[0].name;
-            const lat = data[0].lat;
-            const lon = data[0].lon;
+            const name = cityData[0].name;
+            const lat = cityData[0].lat;
+            const lon = cityData[0].lon;
             getWeatherDetails(name, lat, lon);
         })
         .catch(() => {
@@ -587,7 +587,6 @@ hourlyButton.addEventListener('click', () => {
 });
 
 changeBackgroundButton.addEventListener('click', toggleBackground);
-
 userLocationButton.addEventListener('click', getUserLocation);
 searchButton.addEventListener('click', getCityCoordinates);
 coordinatesButton.addEventListener('click', getLocationByCoordinates);
